@@ -8,88 +8,89 @@
         * {
             box-sizing: border-box;
             font-family: "Microsoft YaHei", sans-serif;
-            margin:0; padding:0;
+            margin: 0;
+            padding: 0;
         }
         body {
-            background:#f0f8ff;
-            padding:20px;
-            max-width:900px;
-            margin:0 auto;
+            background: #f0f8ff;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
         }
         .screen {
-            display:none;
-            background:#fff;
-            padding:30px;
-            border-radius:12px;
-            box-shadow:0 2px 10px #0002;
-            margin-bottom:20px;
+            display: none;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #0002;
+            margin-bottom: 20px;
         }
         .screen.active {
-            display:block;
+            display: block;
         }
         h1 {
-            color:#00509e;
-            text-align:center;
-            margin-bottom:25px;
+            color: #00509e;
+            text-align: center;
+            margin-bottom: 25px;
         }
         input {
-            width:100%;
-            padding:12px;
-            margin:8px 0;
-            border:1px solid #ccc;
-            border-radius:6px;
-            font-size:16px;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
         }
         button {
-            background:#00509e;
-            color:white;
-            border:none;
-            padding:12px 24px;
-            border-radius:8px;
-            font-size:16px;
-            cursor:pointer;
-            margin:10px 5px;
+            background: #00509e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
         }
         button:hover {
-            background:#003b75;
+            background: #003b75;
         }
         .option-btn {
-            display:block;
-            width:100%;
-            margin:10px 0;
+            display: block;
+            width: 100%;
+            margin: 10px 0;
         }
         .correct {
-            background:#9b59b6 !important; /* 紫色答對 */
+            background: #9b59b6 !important;
         }
         .wrong {
-            background:#e74c3c !important;
+            background: #e74c3c !important;
         }
         .match-card {
-            padding:16px;
-            background:#e8f4fc;
-            border-radius:8px;
-            margin:8px;
-            display:inline-block;
-            cursor:pointer;
-            min-width:120px;
-            text-align:center;
+            padding: 16px;
+            background: #e8f4fc;
+            border-radius: 8px;
+            margin: 8px;
+            display: inline-block;
+            cursor: pointer;
+            min-width: 120px;
+            text-align: center;
         }
         .match-card.selected {
-            background:#74b9ff;
+            background: #74b9ff;
         }
         .match-card.matched {
-            background:#9b59b6; /* 紫色配對成功 */
-            color:white;
+            background: #9b59b6;
+            color: white;
         }
         #certCanvas {
-            border:2px solid #00509e;
-            background:#fff;
-            display:block;
-            margin:20px auto;
+            border: 2px solid #00509e;
+            background: #fff;
+            display: block;
+            margin: 20px auto;
         }
         .info-row {
-            font-size:18px;
-            margin:10px 0;
+            font-size: 18px;
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -138,7 +139,6 @@
     </div>
 
 <script>
-// Full 20 biology vocabulary database
 const vocabList = [
     {cn:"胃", en:"Stomach"},
     {cn:"蠕動", en:"Peristalsis"},
@@ -162,7 +162,6 @@ const vocabList = [
     {cn:"碳水化合物", en:"Carbohydrate"}
 ];
 
-// Global game variables
 let player = {};
 let score = 0;
 let startTime = 0;
@@ -173,7 +172,6 @@ let l1List = [];
 let l2List = [];
 let matchSelected = null;
 
-// Shuffle array
 function shuffle(arr){
     let a = [...arr];
     for(let i=a.length-1; i>0; i--){
@@ -183,13 +181,11 @@ function shuffle(arr){
     return a;
 }
 
-// Switch screen
 function showScreen(id){
     document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
     document.getElementById(id).classList.add("active");
 }
 
-// Login validation
 function startGame(){
     let name = document.getElementById("nameInput").value.trim();
     let cls = document.getElementById("classInput").value.trim();
@@ -209,7 +205,6 @@ function startGame(){
     renderLevel1();
 }
 
-// ========== Level1 Chinese → English ==========
 function renderLevel1(){
     if(currentL1Index >= l1List.length){
         document.getElementById("l1Options").innerHTML = "<div>Level 1 Completed!</div>";
@@ -219,7 +214,6 @@ function renderLevel1(){
     document.getElementById("l1Question").innerText = `Chinese term: ${item.cn}`;
     document.getElementById("scoreDisplay").innerText = score;
 
-    // Generate 4 options
     let allEn = vocabList.map(v=>v.en);
     let opts = shuffle([item.en, ...shuffle(allEn).filter(x=>x!==item.en).slice(0,3)]);
     let html = "";
@@ -228,6 +222,7 @@ function renderLevel1(){
     })
     document.getElementById("l1Options").innerHTML = html;
 }
+
 function checkL1(sel){
     const correctAns = l1List[currentL1Index].en;
     let btns = document.querySelectorAll("#l1Options button");
@@ -236,19 +231,19 @@ function checkL1(sel){
         if(b.innerText === sel && sel!==correctAns) b.classList.add("wrong");
     })
     if(sel === correctAns){
-        score +=100; // 答對+100分
+        score += 100;
     }
     setTimeout(()=>{
         currentL1Index++;
         renderLevel1();
     },600);
 }
+
 function nextLevel(){
     showScreen("level2Screen");
     renderLevel2();
 }
 
-// ========== Level2 English → Chinese ==========
 function renderLevel2(){
     if(currentL2Index >= l2List.length){
         document.getElementById("l2Options").innerHTML = "<div>Level 2 Completed!</div>";
@@ -266,6 +261,7 @@ function renderLevel2(){
     })
     document.getElementById("l2Options").innerHTML = html;
 }
+
 function checkL2(sel){
     const correctAns = l2List[currentL2Index].cn;
     let btns = document.querySelectorAll("#l2Options button");
@@ -274,19 +270,19 @@ function checkL2(sel){
         if(b.innerText === sel && sel!==correctAns) b.classList.add("wrong");
     })
     if(sel === correctAns){
-        score +=100; // 答對+100分
+        score += 100;
     }
     setTimeout(()=>{
         currentL2Index++;
         renderLevel2();
     },600);
 }
+
 function nextLevel2(){
     showScreen("level3Screen");
     renderMatchGame();
 }
 
-// ========== Level3 Card Matching ==========
 let matchItems = [];
 let matchMatched = [];
 function renderMatchGame(){
@@ -302,6 +298,7 @@ function renderMatchGame(){
     document.getElementById("matchArea").innerHTML = html;
     document.getElementById("scoreDisplay3").innerText = score;
 }
+
 function selectCard(el){
     if(el.classList.contains("matched")) return;
     if(matchSelected === null){
@@ -315,13 +312,11 @@ function selectCard(el){
     let t2 = el.dataset.type;
 
     if(id1===id2 && t1!==t2){
-        // Match success
         matchSelected.classList.add("matched");
         el.classList.add("matched");
         score += 5;
         matchMatched.push(id1);
     }else{
-        // Match fail
         el.classList.add("wrong");
         matchSelected.classList.add("wrong");
     }
@@ -334,12 +329,12 @@ function selectCard(el){
     document.getElementById("scoreDisplay3").innerText = score;
 }
 
-// ========== Draw Certificate via Canvas ==========
 function showCertificate(){
     totalTime = Math.round((Date.now() - startTime)/1000);
     showScreen("certScreen");
     drawCertificate();
 }
+
 function drawCertificate(){
     const canvas = document.getElementById("certCanvas");
     const ctx = canvas.getContext("2d");
@@ -371,7 +366,6 @@ function drawCertificate(){
     ctx.fillText("Congratulations! You have finished all vocabulary practices!",300,340);
 }
 
-// Download certificate image
 function downloadCert(){
     const canvas = document.getElementById("certCanvas");
     const link = document.createElement("a");
