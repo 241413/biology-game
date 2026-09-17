@@ -12,7 +12,7 @@
             padding: 0;
         }
         body {
-            background: #f0f8ff;
+            background: #f0f8f2;
             padding: 20px;
             max-width: 900px;
             margin: 0 auto;
@@ -29,7 +29,7 @@
             display: block;
         }
         h1 {
-            color: #00509e;
+            color: #1b6e44;
             text-align: center;
             margin-bottom: 25px;
         }
@@ -42,7 +42,7 @@
             font-size: 16px;
         }
         button {
-            background: #00509e;
+            background: #1b6e44;
             color: white;
             border: none;
             padding: 12px 24px;
@@ -52,7 +52,7 @@
             margin: 10px 5px;
         }
         button:hover {
-            background: #003b75;
+            background: #145333;
         }
         .option-btn {
             display: block;
@@ -60,14 +60,14 @@
             margin: 10px 0;
         }
         .correct {
-            background: #9b59b6 !important;
+            background: #27ae60 !important;
         }
         .wrong {
             background: #e74c3c !important;
         }
         .match-card {
             padding: 16px;
-            background: #e8f4fc;
+            background: #e8f7ef;
             border-radius: 8px;
             margin: 8px;
             display: inline-block;
@@ -76,14 +76,14 @@
             text-align: center;
         }
         .match-card.selected {
-            background: #74b9ff;
+            background: #74c9a1;
         }
         .match-card.matched {
-            background: #9b59b6;
+            background: #27ae60;
             color: white;
         }
         #certCanvas {
-            border: 2px solid #00509e;
+            border: 2px solid #1b6e44;
             background: #fff;
             display: block;
             margin: 20px auto;
@@ -95,7 +95,6 @@
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
     <div id="loginScreen" class="screen active">
         <h1>Biology Vocabulary Matching Game</h1>
         <div class="info-row">Please enter your information</div>
@@ -105,7 +104,6 @@
         <button onclick="startGame()">Start Game</button>
     </div>
 
-    <!-- Level1: Chinese Prompt → English Selection -->
     <div id="level1Screen" class="screen">
         <h1>Level 1: Chinese → English</h1>
         <div class="info-row" id="l1Question"></div>
@@ -114,7 +112,6 @@
         <button onclick="nextLevel()">Next Level</button>
     </div>
 
-    <!-- Level2: English Prompt → Chinese Selection -->
     <div id="level2Screen" class="screen">
         <h1>Level 2: English → Chinese</h1>
         <div class="info-row" id="l2Question"></div>
@@ -123,7 +120,6 @@
         <button onclick="nextLevel2()">Next Level</button>
     </div>
 
-    <!-- Level3: Card Matching -->
     <div id="level3Screen" class="screen">
         <h1>Level 3: Vocabulary Matching</h1>
         <div id="matchArea"></div>
@@ -131,7 +127,6 @@
         <button onclick="showCertificate()">Finish Game & Generate Certificate</button>
     </div>
 
-    <!-- Certificate Screen -->
     <div id="certScreen" class="screen">
         <h1>Game Completed! E‑Certificate</h1>
         <canvas id="certCanvas" width="600" height="400"></canvas>
@@ -190,11 +185,11 @@ function startGame(){
     let name = document.getElementById("nameInput").value.trim();
     let cls = document.getElementById("classInput").value.trim();
     let no = document.getElementById("classNoInput").value.trim();
-    if(!name || !cls || !no){
-        alert("Please fill in all fields: Name, Class, Class Number!");
+    if(!name || !cls){
+        alert("Please fill in Name and Class!");
         return;
     }
-    player = {name, class:cls, classNo:no};
+    player = {name, class:cls, classNo:no||"N/A"};
     startTime = Date.now();
     score = 0;
     l1List = shuffle([...vocabList]);
@@ -231,7 +226,7 @@ function checkL1(sel){
         if(b.innerText === sel && sel!==correctAns) b.classList.add("wrong");
     })
     if(sel === correctAns){
-        score += 100;
+        score += 10;
     }
     setTimeout(()=>{
         currentL1Index++;
@@ -270,7 +265,7 @@ function checkL2(sel){
         if(b.innerText === sel && sel!==correctAns) b.classList.add("wrong");
     })
     if(sel === correctAns){
-        score += 100;
+        score += 10;
     }
     setTimeout(()=>{
         currentL2Index++;
@@ -345,7 +340,7 @@ function drawCertificate(){
     ctx.fillStyle="#ffffff";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    ctx.fillStyle="#00509e";
+    ctx.fillStyle="#1b6e44";
     ctx.font="bold 30px Arial";
     ctx.textAlign="center";
     ctx.fillText("Biology Vocabulary Revision Game",300,60);
