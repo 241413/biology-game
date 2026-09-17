@@ -2,107 +2,113 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Biology Vocabulary Game</title>
+<title>Biology Game</title>
 <style>
-body{
-font-family:Arial,sans-serif;
-background:#eef6ff;
-text-align:center;
-padding:20px;
-}
-.box{
-max-width:500px;
-margin:auto;
-background:white;
-padding:20px;
-border-radius:15px;
-}
-button{
-width:100%;
-padding:12px;
-margin:8px 0;
-background:#00509e;
-color:white;
-border:none;
-border-radius:8px;
-font-size:18px;
-}
-.correct{
-background:purple!important;
-}
+body{text-align:center;font-family:Arial;background:#eef6ff;padding:20px}
+input,button{padding:10px;margin:5px}
+button{background:#00509e;color:white;border:none}
+canvas{border:2px solid #00509e;margin-top:20px}
 </style>
 </head>
 <body>
 
-<div class="box">
 <h1>Biology Vocabulary Game</h1>
+
+<div id="login">
+<input id="name" placeholder="Name"><br>
+<input id="cls" placeholder="Class"><br>
+<input id="no" placeholder="Class No"><br>
+<button onclick="start()">Start</button>
+</div>
 
 <div id="game"></div>
 
-<h3>Score: <span id="score">0</span></h3>
-</div>
-
 <script>
 
-const questions=[
-{q:"胃",a:"Stomach",o:["Stomach","Liver","Pancreas","Insulin"]},
-{q:"肝臟",a:"Liver",o:["Liver","Enamel","Incisor","Dentine"]},
-{q:"小腸",a:"Small intestine",o:["Pancreas","Small intestine","Carbohydrate","Insulin"]},
-{q:"胰島素",a:"Insulin",o:["Insulin","Amino acid","Premolar","Liver"]},
-{q:"碳水化合物",a:"Carbohydrate",o:["Carbohydrate","Enamel","Bioengineering","Stomach"]}
-];
-
-let current=0;
 let score=0;
 
-function showQ(){
+const q=[
+["胃","Stomach"],
+["肝臟","Liver"],
+["胰臟","Pancreas"]
+];
 
-if(current>=questions.length){
+function start(){
 
-document.getElementById("game").innerHTML=`
+if(!name.value||!cls.value||!no.value){
+alert("Fill in all fields");
+return;
+}
+
+login.style.display="none";
+show(0);
+}
+
+function show(i){
+
+if(i>=q.length){
+
+game.innerHTML=`
 <h2>Completed!</h2>
-<p>Total Score: ${score}</p>
+<p>Score: ${score}</p>
+
+<canvas id="cert" width="500" height="300"></canvas>
+
+<br><br>
+
+<button onclick="downloadCert()">
+Download Certificate
+</button>
 `;
+
+drawCert();
 
 return;
 }
 
-let q=questions[current];
-
-let html=`<h2>${q.q}</h2>`;
-
-q.o.forEach(x=>{
-html+=`<button onclick="check(this,'${x}')">${x}</button>`;
-});
-
-document.getElementById("game").innerHTML=html;
+game.innerHTML=
+"<h2>"+q[i][0]+"</h2>"+
+"<button onclick='ok("+i+")'>"+q[i][1]+"</button>";
 }
 
-function check(btn,ans){
-
-if(ans===questions[current].a){
-
-btn.classList.add("correct");
-
+function ok(i){
 score+=100;
-
-document.getElementById("score").innerText=score;
-
-setTimeout(()=>{
-current++;
-showQ();
-},500);
-
-}else{
-
-alert("Wrong Answer");
-
+show(i+1);
 }
 
+function drawCert(){
+
+let c=document.getElementById("cert");
+let x=c.getContext("2d");
+
+x.fillStyle="white";
+x.fillRect(0,0,500,300);
+
+x.fillStyle="#00509e";
+x.font="24px Arial";
+x.fillText("Certificate",170,50);
+
+x.fillStyle="black";
+x.font="18px Arial";
+
+x.fillText("Name: "+name.value,50,120);
+x.fillText("Class: "+cls.value,50,160);
+x.fillText("Class No: "+no.value,50,200);
+x.fillText("Score: "+score,50,240);
 }
 
-showQ();
+function downloadCert(){
+
+let c=document.getElementById("cert");
+
+let a=document.createElement("a");
+
+a.download="Certificate.png";
+
+a.href=c.toDataURL();
+
+a.click();
+}
 
 </script>
 
