@@ -2,32 +2,109 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Biology Game</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Biology Vocabulary Game</title>
 <style>
 body{
-    font-family:Arial,sans-serif;
-    text-align:center;
-    background:#f0f8ff;
-    padding:50px;
+font-family:Arial,sans-serif;
+background:#eef6ff;
+text-align:center;
+padding:20px;
 }
-h1{
-    color:#00509e;
+.box{
+max-width:500px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:15px;
 }
 button{
-    padding:10px 20px;
-    font-size:18px;
+width:100%;
+padding:12px;
+margin:8px 0;
+background:#00509e;
+color:white;
+border:none;
+border-radius:8px;
+font-size:18px;
+}
+.correct{
+background:purple!important;
 }
 </style>
 </head>
 <body>
 
+<div class="box">
 <h1>Biology Vocabulary Game</h1>
 
-<p>網站已成功運作！</p>
+<div id="game"></div>
 
-<button onclick="alert('Success!')">
-Start Game
-</button>
+<h3>Score: <span id="score">0</span></h3>
+</div>
+
+<script>
+
+const questions=[
+{q:"胃",a:"Stomach",o:["Stomach","Liver","Pancreas","Insulin"]},
+{q:"肝臟",a:"Liver",o:["Liver","Enamel","Incisor","Dentine"]},
+{q:"小腸",a:"Small intestine",o:["Pancreas","Small intestine","Carbohydrate","Insulin"]},
+{q:"胰島素",a:"Insulin",o:["Insulin","Amino acid","Premolar","Liver"]},
+{q:"碳水化合物",a:"Carbohydrate",o:["Carbohydrate","Enamel","Bioengineering","Stomach"]}
+];
+
+let current=0;
+let score=0;
+
+function showQ(){
+
+if(current>=questions.length){
+
+document.getElementById("game").innerHTML=`
+<h2>Completed!</h2>
+<p>Total Score: ${score}</p>
+`;
+
+return;
+}
+
+let q=questions[current];
+
+let html=`<h2>${q.q}</h2>`;
+
+q.o.forEach(x=>{
+html+=`<button onclick="check(this,'${x}')">${x}</button>`;
+});
+
+document.getElementById("game").innerHTML=html;
+}
+
+function check(btn,ans){
+
+if(ans===questions[current].a){
+
+btn.classList.add("correct");
+
+score+=100;
+
+document.getElementById("score").innerText=score;
+
+setTimeout(()=>{
+current++;
+showQ();
+},500);
+
+}else{
+
+alert("Wrong Answer");
+
+}
+
+}
+
+showQ();
+
+</script>
 
 </body>
 </html>
