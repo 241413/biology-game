@@ -1,116 +1,384 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Biology Game</title>
-<style>
-body{text-align:center;font-family:Arial;background:#eef6ff;padding:20px}
-input,button{padding:10px;margin:5px}
-button{background:#00509e;color:white;border:none}
-canvas{border:2px solid #00509e;margin-top:20px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biology Vocabulary Matching Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+            margin:0; padding:0;
+        }
+        body {
+            background:#f0f8ff;
+            padding:20px;
+            max-width:900px;
+            margin:0 auto;
+        }
+        .screen {
+            display:none;
+            background:#fff;
+            padding:30px;
+            border-radius:12px;
+            box-shadow:0 2px 10px #0002;
+            margin-bottom:20px;
+        }
+        .screen.active {
+            display:block;
+        }
+        h1 {
+            color:#00509e;
+            text-align:center;
+            margin-bottom:25px;
+        }
+        input {
+            width:100%;
+            padding:12px;
+            margin:8px 0;
+            border:1px solid #ccc;
+            border-radius:6px;
+            font-size:16px;
+        }
+        button {
+            background:#00509e;
+            color:white;
+            border:none;
+            padding:12px 24px;
+            border-radius:8px;
+            font-size:16px;
+            cursor:pointer;
+            margin:10px 5px;
+        }
+        button:hover {
+            background:#003b75;
+        }
+        .option-btn {
+            display:block;
+            width:100%;
+            margin:10px 0;
+        }
+        .correct {
+            background:#9b59b6 !important; /* 紫色答對 */
+        }
+        .wrong {
+            background:#e74c3c !important;
+        }
+        .match-card {
+            padding:16px;
+            background:#e8f4fc;
+            border-radius:8px;
+            margin:8px;
+            display:inline-block;
+            cursor:pointer;
+            min-width:120px;
+            text-align:center;
+        }
+        .match-card.selected {
+            background:#74b9ff;
+        }
+        .match-card.matched {
+            background:#9b59b6; /* 紫色配對成功 */
+            color:white;
+        }
+        #certCanvas {
+            border:2px solid #00509e;
+            background:#fff;
+            display:block;
+            margin:20px auto;
+        }
+        .info-row {
+            font-size:18px;
+            margin:10px 0;
+        }
+    </style>
 </head>
 <body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen active">
+        <h1>Biology Vocabulary Matching Game</h1>
+        <div class="info-row">Please enter your information</div>
+        <input type="text" id="nameInput" placeholder="Name">
+        <input type="text" id="classInput" placeholder="Class">
+        <input type="text" id="classNoInput" placeholder="Class Number">
+        <button onclick="startGame()">Start Game</button>
+    </div>
 
-<h1>Biology Vocabulary Game</h1>
+    <!-- Level1: Chinese Prompt → English Selection -->
+    <div id="level1Screen" class="screen">
+        <h1>Level 1: Chinese → English</h1>
+        <div class="info-row" id="l1Question"></div>
+        <div id="l1Options"></div>
+        <div class="info-row">Score: <span id="scoreDisplay">0</span></div>
+        <button onclick="nextLevel()">Next Level</button>
+    </div>
 
-<div id="login">
-<input id="name" placeholder="Name"><br>
-<input id="cls" placeholder="Class"><br>
-<input id="no" placeholder="Class No"><br>
-<button onclick="start()">Start</button>
-</div>
+    <!-- Level2: English Prompt → Chinese Selection -->
+    <div id="level2Screen" class="screen">
+        <h1>Level 2: English → Chinese</h1>
+        <div class="info-row" id="l2Question"></div>
+        <div id="l2Options"></div>
+        <div class="info-row">Score: <span id="scoreDisplay2">0</span></div>
+        <button onclick="nextLevel2()">Next Level</button>
+    </div>
 
-<div id="game"></div>
+    <!-- Level3: Card Matching -->
+    <div id="level3Screen" class="screen">
+        <h1>Level 3: Vocabulary Matching</h1>
+        <div id="matchArea"></div>
+        <div class="info-row">Score: <span id="scoreDisplay3">0</span></div>
+        <button onclick="showCertificate()">Finish Game & Generate Certificate</button>
+    </div>
+
+    <!-- Certificate Screen -->
+    <div id="certScreen" class="screen">
+        <h1>Game Completed! E‑Certificate</h1>
+        <canvas id="certCanvas" width="600" height="400"></canvas>
+        <button onclick="downloadCert()">Download Certificate Image</button>
+    </div>
 
 <script>
-
-let score=0;
-
-const q=[
-["胃","Stomach"],
-["肝臟","Liver"],
-["胰臟","Pancreas"]
+// Full 20 biology vocabulary database
+const vocabList = [
+    {cn:"胃", en:"Stomach"},
+    {cn:"蠕動", en:"Peristalsis"},
+    {cn:"食道", en:"Oesophagus"},
+    {cn:"胰臟", en:"Pancreas"},
+    {cn:"肝臟", en:"Liver"},
+    {cn:"小腸", en:"Small intestine"},
+    {cn:"門齒", en:"Incisor"},
+    {cn:"前臼齒", en:"Premolar"},
+    {cn:"牙周病", en:"Periodontal disease"},
+    {cn:"象牙質", en:"Dentine"},
+    {cn:"琺瑯質", en:"Enamel"},
+    {cn:"消化道", en:"Alimentary canal / Digestive tract"},
+    {cn:"消化酶", en:"Digestive enzyme"},
+    {cn:"傳染病", en:"Infectious disease"},
+    {cn:"胰島素", en:"Insulin"},
+    {cn:"氨基酸", en:"Amino acid"},
+    {cn:"食用纖維", en:"Dietary fibre"},
+    {cn:"甘油三酯", en:"Triglyceride"},
+    {cn:"生物工程", en:"Bioengineering"},
+    {cn:"碳水化合物", en:"Carbohydrate"}
 ];
 
-function start(){
+// Global game variables
+let player = {};
+let score = 0;
+let startTime = 0;
+let totalTime = 0;
+let currentL1Index = 0;
+let currentL2Index = 0;
+let l1List = [];
+let l2List = [];
+let matchSelected = null;
 
-if(!name.value||!cls.value||!no.value){
-alert("Fill in all fields");
-return;
+// Shuffle array
+function shuffle(arr){
+    let a = [...arr];
+    for(let i=a.length-1; i>0; i--){
+        let j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
 }
 
-login.style.display="none";
-show(0);
+// Switch screen
+function showScreen(id){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
 }
 
-function show(i){
-
-if(i>=q.length){
-
-game.innerHTML=`
-<h2>Completed!</h2>
-<p>Score: ${score}</p>
-
-<canvas id="cert" width="500" height="300"></canvas>
-
-<br><br>
-
-<button onclick="downloadCert()">
-Download Certificate
-</button>
-`;
-
-drawCert();
-
-return;
+// Login validation
+function startGame(){
+    let name = document.getElementById("nameInput").value.trim();
+    let cls = document.getElementById("classInput").value.trim();
+    let no = document.getElementById("classNoInput").value.trim();
+    if(!name || !cls || !no){
+        alert("Please fill in all fields: Name, Class, Class Number!");
+        return;
+    }
+    player = {name, class:cls, classNo:no};
+    startTime = Date.now();
+    score = 0;
+    l1List = shuffle([...vocabList]);
+    l2List = shuffle([...vocabList]);
+    currentL1Index = 0;
+    currentL2Index = 0;
+    showScreen("level1Screen");
+    renderLevel1();
 }
 
-game.innerHTML=
-"<h2>"+q[i][0]+"</h2>"+
-"<button onclick='ok("+i+")'>"+q[i][1]+"</button>";
+// ========== Level1 Chinese → English ==========
+function renderLevel1(){
+    if(currentL1Index >= l1List.length){
+        document.getElementById("l1Options").innerHTML = "<div>Level 1 Completed!</div>";
+        return;
+    }
+    const item = l1List[currentL1Index];
+    document.getElementById("l1Question").innerText = `Chinese term: ${item.cn}`;
+    document.getElementById("scoreDisplay").innerText = score;
+
+    // Generate 4 options
+    let allEn = vocabList.map(v=>v.en);
+    let opts = shuffle([item.en, ...shuffle(allEn).filter(x=>x!==item.en).slice(0,3)]);
+    let html = "";
+    opts.forEach(opt=>{
+        html += `<button class="option-btn" onclick="checkL1('${opt}')">${opt}</button>`;
+    })
+    document.getElementById("l1Options").innerHTML = html;
+}
+function checkL1(sel){
+    const correctAns = l1List[currentL1Index].en;
+    let btns = document.querySelectorAll("#l1Options button");
+    btns.forEach(b=>{
+        if(b.innerText === correctAns) b.classList.add("correct");
+        if(b.innerText === sel && sel!==correctAns) b.classList.add("wrong");
+    })
+    if(sel === correctAns){
+        score +=100; // 答對+100分
+    }
+    setTimeout(()=>{
+        currentL1Index++;
+        renderLevel1();
+    },600);
+}
+function nextLevel(){
+    showScreen("level2Screen");
+    renderLevel2();
 }
 
-function ok(i){
-score+=100;
-show(i+1);
+// ========== Level2 English → Chinese ==========
+function renderLevel2(){
+    if(currentL2Index >= l2List.length){
+        document.getElementById("l2Options").innerHTML = "<div>Level 2 Completed!</div>";
+        return;
+    }
+    const item = l2List[currentL2Index];
+    document.getElementById("l2Question").innerText = `English term: ${item.en}`;
+    document.getElementById("scoreDisplay2").innerText = score;
+
+    let allCn = vocabList.map(v=>v.cn);
+    let opts = shuffle([item.cn, ...shuffle(allCn).filter(x=>x!==item.cn).slice(0,3)]);
+    let html = "";
+    opts.forEach(opt=>{
+        html += `<button class="option-btn" onclick="checkL2('${opt}')">${opt}</button>`;
+    })
+    document.getElementById("l2Options").innerHTML = html;
+}
+function checkL2(sel){
+    const correctAns = l2List[currentL2Index].cn;
+    let btns = document.querySelectorAll("#l2Options button");
+    btns.forEach(b=>{
+        if(b.innerText === correctAns) b.classList.add("correct");
+        if(b.innerText === sel && sel!==correctAns) b.classList.add("wrong");
+    })
+    if(sel === correctAns){
+        score +=100; // 答對+100分
+    }
+    setTimeout(()=>{
+        currentL2Index++;
+        renderLevel2();
+    },600);
+}
+function nextLevel2(){
+    showScreen("level3Screen");
+    renderMatchGame();
 }
 
-function drawCert(){
+// ========== Level3 Card Matching ==========
+let matchItems = [];
+let matchMatched = [];
+function renderMatchGame(){
+    matchItems = shuffle([...vocabList]);
+    matchMatched = [];
+    let html = "";
+    matchItems.forEach((v,i)=>{
+        html += `<div class="match-card" data-type="cn" data-id="${i}" onclick="selectCard(this)">${v.cn}</div>`;
+    })
+    matchItems.forEach((v,i)=>{
+        html += `<div class="match-card" data-type="en" data-id="${i}" onclick="selectCard(this)">${v.en}</div>`;
+    })
+    document.getElementById("matchArea").innerHTML = html;
+    document.getElementById("scoreDisplay3").innerText = score;
+}
+function selectCard(el){
+    if(el.classList.contains("matched")) return;
+    if(matchSelected === null){
+        matchSelected = el;
+        el.classList.add("selected");
+        return;
+    }
+    let id1 = matchSelected.dataset.id;
+    let t1 = matchSelected.dataset.type;
+    let id2 = el.dataset.id;
+    let t2 = el.dataset.type;
 
-let c=document.getElementById("cert");
-let x=c.getContext("2d");
-
-x.fillStyle="white";
-x.fillRect(0,0,500,300);
-
-x.fillStyle="#00509e";
-x.font="24px Arial";
-x.fillText("Certificate",170,50);
-
-x.fillStyle="black";
-x.font="18px Arial";
-
-x.fillText("Name: "+name.value,50,120);
-x.fillText("Class: "+cls.value,50,160);
-x.fillText("Class No: "+no.value,50,200);
-x.fillText("Score: "+score,50,240);
+    if(id1===id2 && t1!==t2){
+        // Match success
+        matchSelected.classList.add("matched");
+        el.classList.add("matched");
+        score += 5;
+        matchMatched.push(id1);
+    }else{
+        // Match fail
+        el.classList.add("wrong");
+        matchSelected.classList.add("wrong");
+    }
+    setTimeout(()=>{
+        document.querySelectorAll(".match-card").forEach(c=>{
+            c.classList.remove("selected","wrong");
+        })
+        matchSelected = null;
+    },500);
+    document.getElementById("scoreDisplay3").innerText = score;
 }
 
+// ========== Draw Certificate via Canvas ==========
+function showCertificate(){
+    totalTime = Math.round((Date.now() - startTime)/1000);
+    showScreen("certScreen");
+    drawCertificate();
+}
+function drawCertificate(){
+    const canvas = document.getElementById("certCanvas");
+    const ctx = canvas.getContext("2d");
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2,"0")}/${now.getDate().toString().padStart(2,"0")}`;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#ffffff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle="#00509e";
+    ctx.font="bold 30px Arial";
+    ctx.textAlign="center";
+    ctx.fillText("Biology Vocabulary Revision Game",300,60);
+
+    ctx.font="22px Arial";
+    ctx.fillText("Certificate of Completion",300,100);
+
+    ctx.fillStyle="#222";
+    ctx.font="18px Arial";
+    ctx.fillText(`Name: ${player.name}`,300,150);
+    ctx.fillText(`Class: ${player.class}`,300,180);
+    ctx.fillText(`Class No.: ${player.classNo}`,300,210);
+    ctx.fillText(`Total Score: ${score}`,300,240);
+    ctx.fillText(`Time Used: ${totalTime} seconds`,300,270);
+    ctx.fillText(`Completion Date: ${dateStr}`,300,300);
+
+    ctx.font="italic 16px Arial";
+    ctx.fillText("Congratulations! You have finished all vocabulary practices!",300,340);
+}
+
+// Download certificate image
 function downloadCert(){
-
-let c=document.getElementById("cert");
-
-let a=document.createElement("a");
-
-a.download="Certificate.png";
-
-a.href=c.toDataURL();
-
-a.click();
+    const canvas = document.getElementById("certCanvas");
+    const link = document.createElement("a");
+    link.download = `Biology_Vocab_Cert_${player.name}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
 }
-
 </script>
-
 </body>
 </html>
